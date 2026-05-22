@@ -1,0 +1,55 @@
+go backn server
+
+#include<stdio.h>
+#include<string.h>
+#include<stdlib.h>
+#include<unistd.h>
+#include<arpa/inet.h>
+#include<time.h>
+
+void main()
+{
+    int sockfd;
+
+    struct sockaddr_in server, client;
+
+    char buffer[1024];
+
+    socklen_t len;
+
+    srand(time(0));
+
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+
+    server.sin_family = AF_INET;
+    server.sin_port = htons(5555);
+    server.sin_addr.s_addr = INADDR_ANY;
+
+    bind(sockfd, (struct sockaddr*)&server, sizeof(server));
+
+    while(1)
+    {
+        bzero(buffer, sizeof(buffer));
+
+        len = sizeof(client);
+
+        recvfrom(sockfd, buffer, sizeof(buffer), 0,
+        (struct sockaddr*)&client, &len);
+
+        printf("Server : Received Frame %s\n", buffer);
+
+        if(rand()%2 == 0)
+        {
+            printf("Server : ACK Sent for %s\n", buffer);
+
+            sendto(sockfd, buffer, strlen(buffer)+1, 0,
+            (struct sockaddr*)&client, sizeof(client));
+        }
+        else
+        {
+            printf("Server : ACK Lost\n");
+        }
+
+        sleep(1);
+    }
+}
